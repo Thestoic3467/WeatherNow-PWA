@@ -1,310 +1,116 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-    <title>WeatherNow PWA</title>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WeatherNow 🌦️</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Roboto, sans-serif;
+      background: linear-gradient(180deg, #0a0f2c, #1a1f3b);
+      color: #f1f1f1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      flex-direction: column;
+      text-align: center;
+      overflow: hidden;
+    }
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      color: #7dd3fc;
+    }
+    input {
+      padding: 0.8rem 1.2rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 1rem;
+      outline: none;
+      text-align: center;
+      width: 250px;
+      margin-bottom: 1rem;
+    }
+    button {
+      background-color: #0284c7;
+      color: white;
+      border: none;
+      padding: 0.7rem 1.4rem;
+      border-radius: 1rem;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: 0.3s;
+    }
+    button:hover {
+      background-color: #0369a1;
+    }
+    .card {
+      margin-top: 1.5rem;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 1.5rem 2rem;
+      border-radius: 1.2rem;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+      min-width: 280px;
+      animation: fadeIn 0.6s ease-in-out;
+    }
+    img {
+      width: 80px;
+      height: 80px;
+    }
+    #error {
+      color: #f87171;
+      margin-top: 1rem;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <h1>WeatherNow 🌍</h1>
+  <input id="city" type="text" placeholder="Enter city name..." />
+  <button onclick="getWeather()">Check Weather</button>
+  <div id="output"></div>
+  <p id="error"></p>
 
-    <style>
-      * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-        font-family: "Poppins", sans-serif;
-      }
-      body {
-        min-height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: linear-gradient(135deg, #1e3c72, #2a5298);
-        background-size: 400% 400%;
-        animation: grad 12s ease infinite;
-        color: #fff;
-        padding: 20px;
-      }
-      @keyframes grad {
-        0% {
-          background-position: 0 50%;
-        }
-        50% {
-          background-position: 100% 50%;
-        }
-        100% {
-          background-position: 0 50%;
-        }
-      }
+  <script>
+    async function getWeather() {
+      const city = document.getElementById("city").value.trim();
+      const output = document.getElementById("output");
+      const error = document.getElementById("error");
+      output.innerHTML = "";
+      error.innerHTML = "";
 
-      .card {
-        width: 100%;
-        max-width: 420px;
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(15px);
-        border-radius: 20px;
-        padding: 25px;
-        text-align: center;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-      }
-      .card:hover {
-        transform: scale(1.02);
-        box-shadow: 0 12px 45px rgba(0, 0, 0, 0.4);
-      }
-
-      .search {
-        display: flex;
-        margin-bottom: 20px;
-        flex-wrap: wrap;
-        justify-content: center;
-      }
-      .search input {
-        flex: 1;
-        min-width: 60%;
-        padding: 10px 15px;
-        border-radius: 10px 0 0 10px;
-        border: none;
-        outline: none;
-        font-size: 1em;
-      }
-      .search button {
-        background: #00b4d8;
-        border: none;
-        color: white;
-        padding: 10px 15px;
-        border-radius: 0 10px 10px 0;
-        cursor: pointer;
-        transition: 0.3s;
-      }
-      .search button:hover {
-        background: #0092b2;
-      }
-
-      #lottieContainer {
-        width: 160px;
-        height: 160px;
-        margin: 0 auto;
-      }
-      .temp {
-        font-size: 3em;
-        font-weight: 600;
-        margin: 10px 0;
-      }
-      .desc {
-        font-size: 1.3em;
-        margin-bottom: 20px;
-        text-transform: capitalize;
-      }
-      .details {
-        display: flex;
-        justify-content: space-around;
-        margin-top: 15px;
-        font-size: 1em;
-        flex-wrap: wrap;
-      }
-      .details div {
-        text-align: center;
-        margin: 5px 0;
-        flex: 1;
-        min-width: 80px;
-      }
-      .footer {
-        margin-top: 20px;
-        font-size: 0.9em;
-        opacity: 0.8;
-      }
-      canvas {
-        margin-top: 20px;
-        max-width: 100%;
-      }
-      .chart-container {
-        position: relative;
-        width: 100%;
-        height: 220px;
+      if (!city) {
+        error.textContent = "Please enter a city name.";
+        return;
       }
 
-      @media (max-width: 480px) {
-        .chart-container {
-          height: 180px;
-        }
+      output.innerHTML = "<p>Loading...</p>";
+
+      try {
+        const res = await fetch(`/weather?city=${encodeURIComponent(city)}`);
+        if (!res.ok) throw new Error("Weather data unavailable.");
+        const data = await res.json();
+
+        output.innerHTML = `
+          <div class="card">
+            <h2>${data.city}</h2>
+            <img src="${data.icon}" alt="icon">
+            <h3>${data.temperature.toFixed(1)}°C</h3>
+            <p>${data.description}</p>
+            <p>💧 Humidity: ${data.humidity}%</p>
+            <p>💨 Wind: ${data.wind_speed} m/s</p>
+            <p>🌫️ Air Quality: ${data.air_quality}</p>
+          </div>
+        `;
+      } catch (err) {
+        error.textContent = "❌ " + err.message;
       }
-
-      /* 🔹 Responsive behavior */
-      @media (max-width: 480px) {
-        .card {
-          padding: 18px;
-          border-radius: 15px;
-        }
-        .temp {
-          font-size: 2.4em;
-        }
-        .desc {
-          font-size: 1.1em;
-        }
-        .search input {
-          border-radius: 10px;
-          margin-bottom: 8px;
-          width: 100%;
-        }
-        .search button {
-          border-radius: 10px;
-          width: 100%;
-        }
-        .details {
-          flex-direction: column;
-          align-items: center;
-        }
-        #lottieContainer {
-          width: 120px;
-          height: 120px;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <div class="card">
-      <h1>🌦️ WeatherNow</h1>
-      <div class="search">
-        <input id="cityInput" type="text" placeholder="Enter city..." />
-        <button onclick="getWeather()">Search</button>
-      </div>
-      <div id="weatherData" style="display: none">
-        <div id="lottieContainer"></div>
-        <div class="temp" id="temp"></div>
-        <div class="desc" id="desc"></div>
-        <div class="details">
-          <div><strong>💧</strong><br /><span id="humidity"></span></div>
-          <div><strong>🌬️</strong><br /><span id="wind"></span></div>
-          <div><strong>🌫️</strong><br /><span id="air"></span></div>
-        </div>
-        <div class="chart-container">
-          <canvas id="forecastChart"></canvas>
-        </div>
-      </div>
-      <div class="footer">FastAPI • Lottie • Responsive UI</div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/lottie-web@5.12.2/build/player/lottie.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <script>
-      // Mapping for weather type -> Lottie animation URLs
-      const lottieMap = {
-        clear: "https://assets9.lottiefiles.com/packages/lf20_jmgekfqg.json",
-        clouds: "https://assets9.lottiefiles.com/packages/lf20_dgjK9j.json",
-        rain: "https://assets10.lottiefiles.com/packages/lf20_xrmvsmjt.json",
-        thunderstorm:
-          "https://assets2.lottiefiles.com/packages/lf20_tljjah3p.json",
-        snow: "https://assets1.lottiefiles.com/packages/lf20_xldzoarx.json",
-        mist: "https://assets2.lottiefiles.com/packages/lf20_p8bfn5to.json",
-      };
-
-      let animInstance = null;
-
-      function playLottie(desc) {
-        const key =
-          Object.keys(lottieMap).find((k) => desc.includes(k)) || "clear";
-        if (animInstance) {
-          animInstance.destroy();
-        }
-        animInstance = lottie.loadAnimation({
-          container: document.getElementById("lottieContainer"),
-          renderer: "svg",
-          loop: true,
-          autoplay: true,
-          path: lottieMap[key],
-        });
-      }
-
-      async function getWeather() {
-        const city = document.getElementById("cityInput").value.trim();
-        if (!city) {
-          alert("Enter a city");
-          return;
-        }
-
-        try {
-          const resp = await fetch(
-            `http://127.0.0.1:8000/weather?city=${city}`
-          );
-          if (!resp.ok) throw new Error("Weather API error");
-          const data = await resp.json();
-
-          document.getElementById("weatherData").style.display = "block";
-          playLottie(data.description.toLowerCase());
-          document.getElementById(
-            "temp"
-          ).textContent = `${data.temperature.toFixed(1)}°C`;
-          document.getElementById("desc").textContent = data.description;
-          document.getElementById("humidity").textContent = `${data.humidity}%`;
-          document.getElementById(
-            "wind"
-          ).textContent = `${data.wind_speed} m/s`;
-          document.getElementById("air").textContent = data.air_quality;
-
-          drawForecast(city);
-        } catch (e) {
-          alert("Weather fetch failed — ensure backend is running.");
-          console.error(e);
-        }
-      }
-
-      async function drawForecast(city) {
-        try {
-          const res = await fetch(
-            `https://api.openweathermap.org/data/2.5/forecast?q=${city}&units=metric&appid=d9a61df666075aab0acd01cb08bfac86`
-          );
-          const forecast = await res.json();
-          const temps = [];
-          const labels = [];
-          for (let i = 0; i < forecast.list.length; i += 8) {
-            temps.push(forecast.list[i].main.temp);
-            labels.push(new Date(forecast.list[i].dt_txt).toLocaleDateString());
-          }
-
-          const ctx = document.getElementById("forecastChart").getContext("2d");
-          if (window.chartInstance) {
-            window.chartInstance.destroy();
-          }
-
-          window.chartInstance = new Chart(ctx, {
-            type: "line",
-            data: {
-              labels,
-              datasets: [
-                {
-                  label: "5-Day Temp (°C)",
-                  data: temps,
-                  borderColor: "#00b4d8",
-                  backgroundColor: "rgba(0,180,216,0.2)",
-                  tension: 0.4,
-                  fill: true,
-                  pointRadius: 4,
-                  pointHoverRadius: 6,
-                },
-              ],
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              scales: {
-                x: {
-                  ticks: { color: "#fff" },
-                  grid: { color: "rgba(255,255,255,0.2)" },
-                },
-                y: {
-                  ticks: { color: "#fff" },
-                  grid: { color: "rgba(255,255,255,0.2)" },
-                },
-              },
-              plugins: {
-                legend: { labels: { color: "#fff" } },
-              },
-            },
-          });
-        } catch (e) {
-          console.error("Forecast fetch failed:", e);
-        }
-      }
-    </script>
-  </body>
+    }
+  </script>
+</body>
 </html>
