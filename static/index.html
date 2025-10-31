@@ -76,41 +76,45 @@
   <div id="output"></div>
   <p id="error"></p>
 
-  <script>
-    async function getWeather() {
-      const city = document.getElementById("city").value.trim();
-      const output = document.getElementById("output");
-      const error = document.getElementById("error");
-      output.innerHTML = "";
-      error.innerHTML = "";
+<script>
+  async function getWeather() {
+    const city = document.getElementById("city").value.trim();
+    const output = document.getElementById("output");
+    const error = document.getElementById("error");
+    output.innerHTML = "";
+    error.innerHTML = "";
 
-      if (!city) {
-        error.textContent = "Please enter a city name.";
-        return;
-      }
-
-      output.innerHTML = "<p>Loading...</p>";
-
-      try {
-        const res = await fetch(`/weather?city=${encodeURIComponent(city)}`);
-        if (!res.ok) throw new Error("Weather data unavailable.");
-        const data = await res.json();
-
-        output.innerHTML = `
-          <div class="card">
-            <h2>${data.city}</h2>
-            <img src="${data.icon}" alt="icon">
-            <h3>${data.temperature.toFixed(1)}°C</h3>
-            <p>${data.description}</p>
-            <p>💧 Humidity: ${data.humidity}%</p>
-            <p>💨 Wind: ${data.wind_speed} m/s</p>
-            <p>🌫️ Air Quality: ${data.air_quality}</p>
-          </div>
-        `;
-      } catch (err) {
-        error.textContent = "❌ " + err.message;
-      }
+    if (!city) {
+      error.textContent = "Please enter a city name.";
+      return;
     }
-  </script>
+
+    output.innerHTML = "<p>Loading...</p>";
+
+    try {
+      // ✅ Use full backend URL so frontend knows where to fetch from
+      const res = await fetch(`https://weathernow-pwa.onrender.com/weather?city=${encodeURIComponent(city)}`);
+
+      if (!res.ok) throw new Error("Weather data unavailable.");
+
+      const data = await res.json();
+
+      output.innerHTML = `
+        <div class="card">
+          <h2>${data.city}</h2>
+          <img src="${data.icon}" alt="icon">
+          <h3>${data.temperature.toFixed(1)}°C</h3>
+          <p>${data.description}</p>
+          <p>💧 Humidity: ${data.humidity}%</p>
+          <p>💨 Wind: ${data.wind_speed} m/s</p>
+          <p>🌫️ Air Quality: ${data.air_quality}</p>
+        </div>
+      `;
+    } catch (err) {
+      error.textContent = "❌ " + err.message;
+    }
+  }
+</script>
+
 </body>
 </html>
